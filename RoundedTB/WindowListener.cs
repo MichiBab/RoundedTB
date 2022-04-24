@@ -22,13 +22,6 @@ namespace RoundedTB
         public WindowListener()
         {
             mw = (MainWindow)System.Windows.Application.Current.MainWindow;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.ShowInTaskbar = false;
-            this.Load += new EventHandler(WindowListener_Load);
-            //Run as form
-            this.Visible = false;
-            this.Hide();
-
             formthread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
@@ -36,9 +29,40 @@ namespace RoundedTB
             });
             formthread.Start();
         }
-        void WindowListener_Load(object sender, EventArgs e)
+
+        private bool allowVisible;     // ContextMenu's Show command used
+        private bool allowClose;       // ContextMenu's Exit command used
+
+        protected override void SetVisibleCore(bool value)
         {
-            this.Size = new System.Drawing.Size(0, 0);
+            if (!allowVisible)
+            {
+                value = false;
+                if (!this.IsHandleCreated) CreateHandle();
+            }
+            base.SetVisibleCore(value);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!allowClose)
+            {
+                this.Hide();
+                e.Cancel = true;
+            }
+            base.OnFormClosing(e);
+        }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            allowVisible = true;
+            Show();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            allowClose = true;
+            Close();
         }
 
         protected override void WndProc(ref Message m)
