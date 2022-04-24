@@ -47,6 +47,7 @@ namespace RoundedTB
         public bool isAlreadyRunning = false;
         public Background background;
         public Interaction interaction;
+        public static WindowListener windowListener = null;
         private HwndSource source;
         public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
         public int version = -1;
@@ -84,6 +85,7 @@ namespace RoundedTB
             // Initialise functions
             background = new Background();
             interaction = new Interaction();
+            windowListener = new WindowListener();
 
             // Check if RoundedTB is already running, and if it is, do nothing.
             Process[] matchingProcesses = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
@@ -497,10 +499,11 @@ namespace RoundedTB
             }
             else
             {
-                taskbarThread.CancelAsync();
                 while (taskbarThread.IsBusy == true)
                 {
+                    taskbarThread.CancelAsync();
                     System.Windows.Forms.Application.DoEvents();
+                    Debug.WriteLine("MainThread in apply update button: taskbar thread isbusy, sending a cancel after waiting again!");
                     System.Threading.Thread.Sleep(100);
                 }
                 taskbarThread.RunWorkerAsync((mt, ml, mb, mr, 0));
