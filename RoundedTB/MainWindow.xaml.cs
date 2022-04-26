@@ -86,6 +86,10 @@ namespace RoundedTB
             background = new Background();
             interaction = new Interaction();
             windowListener = new WindowListener();
+            //for screen wake up after sleep
+            SystemEvents.PowerModeChanged += OnPowerChange;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+
 
             // Check if RoundedTB is already running, and if it is, do nothing.
             Process[] matchingProcesses = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
@@ -522,9 +526,31 @@ namespace RoundedTB
             UpdateUi();
 
         }
+        
 
+        private void OnPowerChange(object s, PowerModeChangedEventArgs e)
+                {
+            //reset taskbar on display change
+            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                    {
+                        ApplyButton_Click(null, null);
+                    }));
+            Debug.WriteLine("Caught powerchanged event");
+                }
+
+        private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        {
+            //reset taskbar on display change
+            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                ApplyButton_Click(null, null);
+            }));
+            Debug.WriteLine("Caught session switch event");
+        }
         protected override void OnClosing(CancelEventArgs e)
         {
+            SystemEvents.PowerModeChanged -= OnPowerChange;
+            SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
             base.OnClosing(e);
 
             if (shouldReallyDieNoReally == false)

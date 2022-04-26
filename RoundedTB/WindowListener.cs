@@ -76,6 +76,22 @@ namespace RoundedTB
                     {
                         mw.ApplyButton_Click(null, null);
                     }));
+
+                    // If the monitor connected is big, it kinda seems to be delayed and the click apply button comes first and it the rearanges.
+                    // so this is just a simple fix first...
+                    new Thread(() => { 
+                        
+                            Thread.Sleep(1000);
+                            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                            {
+                                mw.ApplyButton_Click(null, null);
+                            }));
+                            Thread.Sleep(2000);
+                            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                            {
+                                mw.ApplyButton_Click(null, null);
+                            }));
+                            }).Start();
                     break;
             }
             base.WndProc(ref m);
