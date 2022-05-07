@@ -274,13 +274,19 @@ namespace RoundedTB
                 }
 
 
+
+
+                
+
+
+
                 // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
                 if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)
                 {
                     Debug.WriteLine($"Refresh required on taskbar {current}");
                     taskbars[current].Ignored = false;
                     int isFullTest = newTaskbar.TrayRect.Left - newTaskbar.AppListRect.Right;
-                    mw.interaction.AddLog($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
+                    //mw.interaction.AddLog($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
                     if (!settings.IsDynamic || (isFullTest <= taskbars[current].ScaleFactor * 25 && isFullTest > 0 && newTaskbar.TrayRect.Left != 0))
                     {
                         // Add the rect changes to the temporary list of taskbars
@@ -288,21 +294,21 @@ namespace RoundedTB
                         taskbars[current].AppListRect = newTaskbar.AppListRect;
                         taskbars[current].TrayRect = newTaskbar.TrayRect;
                         Taskbar.UpdateSimpleTaskbar(taskbars[current], settings);
-                        mw.interaction.AddLog($"Updated taskbar {current} simply");
+                        //mw.interaction.AddLog($"Updated taskbar {current} simply");
                     }
                     else
                     {
-                        if (Taskbar.CheckDynamicUpdateIsValid(taskbars[current], newTaskbar))
-                        {
-                            // Add the rect changes to the temporary list of taskbars
-                            taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;
-                            taskbars[current].AppListRect = newTaskbar.AppListRect;
-                            taskbars[current].TrayRect = newTaskbar.TrayRect;
-                            Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
-                            mw.interaction.AddLog($"Updated taskbar {current} dynamically");
-                        }
+                        //Update directly, old routine did not catch it after merging tray and taskbar
+                        taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;
+                        taskbars[current].AppListRect = newTaskbar.AppListRect;
+                        taskbars[current].TrayRect = newTaskbar.TrayRect;
+                        Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
+
                     }
                 }
+
+                
+
             }
             mw.taskbarDetails = taskbars;
 

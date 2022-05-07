@@ -197,10 +197,33 @@ namespace RoundedTB
         /// <returns>
         /// a bool indicating success.
         /// </returns>
+
         public static bool UpdateDynamicTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
             try
             {
+                IntPtr hwndMain = LocalPInvoke.FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null); // Find main taskbar
+                IntPtr hwndContent = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Find apps bar
+                LocalPInvoke.GetWindowRect(hwndMain, out LocalPInvoke.RECT rectMain); // Get the RECT of the main taskbar
+                IntPtr hwndTray = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to the main taskbar's tray
+                LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectTray); // Get the RECT for the main taskbar's tray
+                IntPtr hwndAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "ReBarWindow32", null), IntPtr.Zero, "MSTaskSwWClass", null); // Get the handle to the main taskbar's app list
+                LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
+
+                //Set applist to the left
+                LocalPInvoke.SetWindowPos(hwndContent, IntPtr.Zero, -(((rectTray.Right - rectTray.Left) / 2)), 0, 0, 0,
+                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
+                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
+                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent);
+
+                //Set tray to the left
+                LocalPInvoke.SetWindowPos(hwndTray, IntPtr.Zero, rectAppList.Right - ((rectTray.Right - rectTray.Left) / 2), 0, 0, 0,
+                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
+                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
+                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent
+                    );
+
+
                 IntPtr mainRegion;
                 IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
@@ -256,9 +279,9 @@ namespace RoundedTB
                 if (settings.IsCentred)
                 {
                     mainRegion = LocalPInvoke.CreateRoundRectRgn(
-                        centredDistanceFromEdge + centredEffectiveRegion.Left,
+                        centredDistanceFromEdge + centredEffectiveRegion.Left - ((rectTray.Right - rectTray.Left) / 2),
                         centredEffectiveRegion.Top,
-                        centredEffectiveRegion.Width - centredDistanceFromEdge,
+                        centredEffectiveRegion.Width - centredDistanceFromEdge + (((rectTray.Right - rectTray.Left) / 2)),
                         centredEffectiveRegion.Height,
                         centredEffectiveRegion.CornerRadius,
                         centredEffectiveRegion.CornerRadius
@@ -279,6 +302,7 @@ namespace RoundedTB
                         );
                 }
 
+                /*
                 // If the user has it enabled and the tray handle isn't null, create a region for the system tray and merge it with the taskbar region
                 if (settings.ShowTray && taskbar.TrayHwnd != IntPtr.Zero)
                 {
@@ -294,7 +318,7 @@ namespace RoundedTB
                     LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
                     mainRegion = workingRegion;
                 }
-
+                */
                 if (settings.ShowWidgets)
                 {
                     IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
@@ -316,6 +340,8 @@ namespace RoundedTB
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
                 }
+
+                
 
                 return true;
             }

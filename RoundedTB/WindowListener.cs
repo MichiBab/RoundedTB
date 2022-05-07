@@ -81,11 +81,11 @@ namespace RoundedTB
                     // so this is just a simple fix first...
                     new Thread(() => { 
                         
-                            Thread.Sleep(1000);
-                            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                mw.ApplyButton_Click(null, null);
-                            }));
+                            //Thread.Sleep(1000);
+                            //System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                            //{
+                                //mw.ApplyButton_Click(null, null);
+                            //}));
                             Thread.Sleep(2000);
                             System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
                             {
