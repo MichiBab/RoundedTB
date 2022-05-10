@@ -13,7 +13,11 @@ namespace RoundedTB
             public IntPtr TaskbarHwnd { get; set; } // Handle to the taskbar
             public IntPtr TrayHwnd { get; set; } // Handle to the tray on the taskbar (if present)
             public IntPtr AppListHwnd { get; set; } // Handle to the list of open/pinned apps on the taskbar
+
+            public IntPtr ReBarHwnd { get; set; } // rebar
+            public IntPtr ContentHwnd { get; set; } // Find apps bar
             public LocalPInvoke.RECT TaskbarRect { get; set; } // Bounding box for the taskbar
+            public LocalPInvoke.RECT ReBarRect { get; set; } // Bounding box for the taskbar
             public LocalPInvoke.RECT TrayRect { get; set; }  // Bounding box for the tray (dynamic)
             public LocalPInvoke.RECT AppListRect { get; set; } // Bounding box for the list of pinned & open apps (dynamic)
             public IntPtr RecoveryHrgn { get; set; } // Pointer to the recovery region for any given taskbar. Defaults to IntPtr.Zero

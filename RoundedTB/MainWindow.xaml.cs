@@ -531,21 +531,15 @@ namespace RoundedTB
         private void OnPowerChange(object s, PowerModeChangedEventArgs e)
                 {
             //reset taskbar on display change
-            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                    {
-                        ApplyButton_Click(null, null);
-                    }));
             Debug.WriteLine("Caught powerchanged event");
-                }
+            windowListener.ForceRefreshOfTaskbarRoutine();
+        }
 
         private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
             //reset taskbar on display change
-            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                ApplyButton_Click(null, null);
-            }));
             Debug.WriteLine("Caught session switch event");
+            windowListener.ForceRefreshOfTaskbarRoutine();
         }
         protected override void OnClosing(CancelEventArgs e)
         {

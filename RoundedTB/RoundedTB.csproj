@@ -107,4 +107,9 @@
     <Resource Include="res\HeadBannerCan.png" />
     <Resource Include="res\HeadBannerDev.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="TBUpdateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>

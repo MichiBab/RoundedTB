@@ -202,27 +202,18 @@ namespace RoundedTB
         {
             try
             {
-                IntPtr hwndMain = LocalPInvoke.FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null); // Find main taskbar
-                IntPtr hwndContent = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Find apps bar
-                LocalPInvoke.GetWindowRect(hwndMain, out LocalPInvoke.RECT rectMain); // Get the RECT of the main taskbar
-                IntPtr hwndTray = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to the main taskbar's tray
-                LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectTray); // Get the RECT for the main taskbar's tray
-                IntPtr hwndAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "ReBarWindow32", null), IntPtr.Zero, "MSTaskSwWClass", null); // Get the handle to the main taskbar's app list
-                LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
-
                 //Set applist to the left
-                LocalPInvoke.SetWindowPos(hwndContent, IntPtr.Zero, -(((rectTray.Right - rectTray.Left) / 2)), 0, 0, 0,
+                LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
                     LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent);
 
                 //Set tray to the left
-                LocalPInvoke.SetWindowPos(hwndTray, IntPtr.Zero, rectAppList.Right - ((rectTray.Right - rectTray.Left) / 2), 0, 0, 0,
+                LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
                     LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent
                     );
-
 
                 IntPtr mainRegion;
                 IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
@@ -279,9 +270,9 @@ namespace RoundedTB
                 if (settings.IsCentred)
                 {
                     mainRegion = LocalPInvoke.CreateRoundRectRgn(
-                        centredDistanceFromEdge + centredEffectiveRegion.Left - ((rectTray.Right - rectTray.Left) / 2),
+                        centredDistanceFromEdge + centredEffectiveRegion.Left - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2),
                         centredEffectiveRegion.Top,
-                        centredEffectiveRegion.Width - centredDistanceFromEdge + (((rectTray.Right - rectTray.Left) / 2)),
+                        centredEffectiveRegion.Width - centredDistanceFromEdge + (((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)),
                         centredEffectiveRegion.Height,
                         centredEffectiveRegion.CornerRadius,
                         centredEffectiveRegion.CornerRadius
@@ -464,9 +455,12 @@ namespace RoundedTB
             IntPtr hwndAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "ReBarWindow32", null), IntPtr.Zero, "MSTaskSwWClass", null); // Get the handle to the main taskbar's app list
             LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
 
+            IntPtr hwndContent = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Find apps bar
+
             retVal.Add(new Types.Taskbar
             {
                 TaskbarHwnd = hwndMain,
+                ContentHwnd = hwndContent,
                 TrayHwnd = hwndTray,
                 AppListHwnd = hwndAppList,
                 TaskbarRect = rectMain,

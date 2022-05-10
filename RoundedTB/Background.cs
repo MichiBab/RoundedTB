@@ -129,6 +129,7 @@ namespace RoundedTB
                 Debug.WriteLine("Regenerating taskbar info");
             }
 
+
             for (int current = 0; current < taskbars.Count; current++)
             {
                 if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
@@ -273,13 +274,6 @@ namespace RoundedTB
                     }
                 }
 
-
-
-
-                
-
-
-
                 // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
                 if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)
                 {
@@ -303,16 +297,10 @@ namespace RoundedTB
                         taskbars[current].AppListRect = newTaskbar.AppListRect;
                         taskbars[current].TrayRect = newTaskbar.TrayRect;
                         Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
-
                     }
                 }
-
-                
-
             }
             mw.taskbarDetails = taskbars;
-
-
         }
     }
 }
