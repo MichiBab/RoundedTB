@@ -69,13 +69,13 @@ namespace RoundedTB
         {
             //sets this app as an icon to the taskbar and removes it directly. This forces the taskbar to refresh and removes the bug when
             //being run in dynamic mode after screen change events... todo find a way to do it in the dynamicrefresh routine and not here.
-
             //This creates a invisible form that instantly closes after showing.
             //But since it creates an icon in the taskbar, windows updates the whole taskbar and the
             //applist rect from their api gets refreshed, which does not seem to happen normally after getting a window change.
             TBUpdateForm updateForm = new TBUpdateForm();
             updateForm.Show();
-
+ 
+            
         }
 
         public void ForceRefreshOfTaskbarRoutine()
@@ -84,17 +84,14 @@ namespace RoundedTB
             System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 mw.ApplyButton_Click(null, null);
+                SendRefreshToTaskbar();
             }));
+            
 
+            /*
             // If the monitor connected is big, it kinda seems to be delayed and the click apply button comes first and it the rearanges.
             // so this is just a simple fix first...
             new Thread(() => {
-
-                //Thread.Sleep(1000);
-                //System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                //{
-                //mw.ApplyButton_Click(null, null);
-                //}));
                 Thread.Sleep(2000);
                 System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
@@ -102,7 +99,8 @@ namespace RoundedTB
                 }));
                 SendRefreshToTaskbar();
             }).Start();
-            SendRefreshToTaskbar();
+            */
+
 
         }
         
