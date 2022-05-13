@@ -83,8 +83,8 @@ namespace RoundedTB
             //reset taskbar on display change
             System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
             {
-                mw.ApplyButton_Click(null, null);
-                SendRefreshToTaskbar();
+                mw.ApplyButton_Click(null, null); //Apply Button click fixes the taskbar after a screen change event or Powerstate change event
+                SendRefreshToTaskbar(); //This refreshes the appbar to keep the tray and apps merged after change events
             }));
             
 
