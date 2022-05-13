@@ -292,11 +292,14 @@ namespace RoundedTB
                     }
                     else
                     {
-                        //Update directly, old routine did not catch it after merging tray and taskbar
-                        taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;
-                        taskbars[current].AppListRect = newTaskbar.AppListRect;
-                        taskbars[current].TrayRect = newTaskbar.TrayRect;
-                        Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
+                        if (Taskbar.CheckDynamicUpdateIsValid(taskbars[current], newTaskbar))
+                        {
+                            //Update directly, old routine did not catch it after merging tray and taskbar
+                            taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;
+                            taskbars[current].AppListRect = newTaskbar.AppListRect;
+                            taskbars[current].TrayRect = newTaskbar.TrayRect;
+                            Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
+                        }
                     }
                 }
             }

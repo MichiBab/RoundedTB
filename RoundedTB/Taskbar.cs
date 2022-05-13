@@ -400,12 +400,14 @@ namespace RoundedTB
             // Check if either of the supplied taskbars are null
             if (currentTB == null || newTB == null)
             {
+                Debug.WriteLine("refresh returned false: current or new == null");
                 return false;
             }
 
             // Check if the taskbar handles are different
             if (currentTB.TaskbarHwnd != newTB.TaskbarHwnd)
             {
+                Debug.WriteLine("refresh returned false: taskbarhwnd are different");
                 return false;
             }
 
@@ -413,23 +415,32 @@ namespace RoundedTB
             int newAppListWidth = newTB.AppListRect.Right - newTB.AppListRect.Left;
             int currentAppListWidth = currentTB.AppListRect.Right - currentTB.AppListRect.Left;
 
+
+
+            //IF Taskbar is merged with tray, this always returns false, since trayrect left is in an offset
+            /*
             if (newTB.AppListRect.Right >= newTB.TrayRect.Left && newTB.TrayRect.Left != 0)
             {
+                Debug.WriteLine("refresh returned false: newTB.AppListRect.Right >= newTB.TrayRect.Left && newTB.TrayRect.Left != 0");
                 return false;
             }
 
+           
             if (newAppListWidth == newTB.TrayRect.Left && newTB.TrayRect.Left != 0)
             {
-                return false;
-            }
+               Debug.WriteLine("refresh returned false: newAppListWidth == newTB.TrayRect.Left && newTB.TrayRect.Left != 0");
+              return false;
+            }*/
 
             if (newAppListWidth <= 20 * currentTB.ScaleFactor && newAppListWidth != 0)
             {
+                Debug.WriteLine("refresh returned false: newAppListWidth <= 20 * currentTB.ScaleFactor && newAppListWidth != 0");
                 return false;
             }
 
             if (newAppListWidth >= newTB.TaskbarRect.Right - newTB.TaskbarRect.Left && newAppListWidth != 0)
             {
+                Debug.WriteLine("refresh returned false: newAppListWidth >= newTB.TaskbarRect.Right - newTB.TaskbarRect.Left && newAppListWidth != 0");
                 return false;
             }
 
