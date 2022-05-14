@@ -208,7 +208,7 @@ namespace RoundedTB
         private static Types.Taskbar UpdateDynamicTrayCheckRoutine(Types.Taskbar taskbar)
         {
             Types.Taskbar tmp = null;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 50; i++)
             {
                 //Attempt to refresh the taskbar until the applistrect updates, since it is in a wrong state after a screen change event.
                 System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
@@ -219,7 +219,6 @@ namespace RoundedTB
                 tmp = GetQuickTaskbarRects(taskbar.TaskbarHwnd, taskbar.TrayHwnd, taskbar.AppListHwnd, taskbar.ContentHwnd);
                 if (tmp.AppListRect.Right - ((tmp.TrayRect.Right - tmp.TrayRect.Left) / 2) != taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2))
                 {
-                    update_needed_on_dynamic_tb = false;
                     return tmp;
                 }
                 System.Threading.Thread.Sleep(100);
@@ -240,6 +239,7 @@ namespace RoundedTB
                 if (update_needed_on_dynamic_tb)
                 {
                     taskbar = UpdateDynamicTrayCheckRoutine(taskbar);
+                    update_needed_on_dynamic_tb = false;
                 }
 
                 //Set applist to the left
