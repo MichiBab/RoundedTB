@@ -116,17 +116,20 @@ namespace RoundedTB
         /// <returns>
         /// a partial Taskbar containing just rects and handles.
         /// </returns>
-        public static Types.Taskbar GetQuickTaskbarRects(IntPtr taskbarHwnd, IntPtr trayHwnd, IntPtr appListHwnd)
+        public static Types.Taskbar GetQuickTaskbarRects(IntPtr taskbarHwnd, IntPtr trayHwnd, IntPtr appListHwnd, IntPtr contentHwnd)
         {
             LocalPInvoke.GetWindowRect(taskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
             LocalPInvoke.GetWindowRect(trayHwnd, out LocalPInvoke.RECT trayRectCheck);
             LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRectCheck);
+            LocalPInvoke.GetWindowRect(contentHwnd, out LocalPInvoke.RECT contentRectCheck);
 
             return new Types.Taskbar()
             {
                 TaskbarHwnd = taskbarHwnd,
                 TrayHwnd = trayHwnd,
                 AppListHwnd = appListHwnd,
+                ContentHwnd = contentHwnd,
+                ContentRect = contentRectCheck,
                 TaskbarRect = taskbarRectCheck,
                 TrayRect = trayRectCheck,
                 AppListRect = appListRectCheck
@@ -206,13 +209,13 @@ namespace RoundedTB
                 LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
-                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent);
+                    LocalPInvoke.SetWindowPosFlags.FrameChanged);
 
                 //Set tray to the left
                 LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
-                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent
+                    LocalPInvoke.SetWindowPosFlags.FrameChanged
                     );
 
                 IntPtr mainRegion;
@@ -259,6 +262,8 @@ namespace RoundedTB
                 };
 
                 centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
+
+                
 
                 // If on Windows 10, add an extra 20 logical pixels for the grabhandle
                 if (!settings.IsWindows11)
@@ -467,13 +472,14 @@ namespace RoundedTB
             LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
 
             IntPtr hwndContent = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Find apps bar
-
+            LocalPInvoke.GetWindowRect(hwndContent, out LocalPInvoke.RECT rectContent);
             retVal.Add(new Types.Taskbar
             {
                 TaskbarHwnd = hwndMain,
                 ContentHwnd = hwndContent,
                 TrayHwnd = hwndTray,
                 AppListHwnd = hwndAppList,
+                ContentRect = rectContent,
                 TaskbarRect = rectMain,
                 TrayRect = rectTray,
                 AppListRect = rectAppList,
@@ -481,7 +487,7 @@ namespace RoundedTB
                 ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndMain)) / 96.00,
                 TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}",
                 Ignored = false
-            });
+            }); ;
             int style = LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32();
             if ((style & LocalPInvoke.WS_EX_LAYERED) != LocalPInvoke.WS_EX_LAYERED)
             {

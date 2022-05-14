@@ -16,6 +16,8 @@ namespace RoundedTB
 
             public IntPtr ReBarHwnd { get; set; } // rebar
             public IntPtr ContentHwnd { get; set; } // Find apps bar
+
+            public LocalPInvoke.RECT ContentRect { get; set; } // Apps Bar Rect
             public LocalPInvoke.RECT TaskbarRect { get; set; } // Bounding box for the taskbar
             public LocalPInvoke.RECT ReBarRect { get; set; } // Bounding box for the taskbar
             public LocalPInvoke.RECT TrayRect { get; set; }  // Bounding box for the tray (dynamic)

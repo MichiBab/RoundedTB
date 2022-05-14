@@ -139,7 +139,7 @@ namespace RoundedTB
                     break;
                 }
                 // Get the latest quick details of this taskbar
-                Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
+                Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd, taskbars[current].ContentHwnd);
 
 
                 // If the taskbar's monitor has a maximised window, reset it so it's "filled"
