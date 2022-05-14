@@ -194,17 +194,52 @@ namespace RoundedTB
             }
         }
 
+        
+
+        public static volatile bool update_needed_on_dynamic_tb = true;
+        public static volatile int lastTrayPosForDynamicCheck = 0;
+
+        /// <summary>
+        /// Refreshes the taskbar after a window state change event like a powerevent. Creates a new form to force a refresh,
+        /// else the AppList rect stays in a wrong position.
+        /// </summary>
+        /// <returns>
+        /// a updated taskbar or current if not updated
+        /// </returns>
+        private static Types.Taskbar UpdateDynamicTrayCheckRoutine(Types.Taskbar taskbar,int newTrayPos)
+        {
+            if(lastTrayPosForDynamicCheck != newTrayPos)
+            {
+                Types.Taskbar tmp = null;
+                System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    TBUpdateForm updateForm = new TBUpdateForm();
+                    updateForm.Show(); //This refreshes the appbar to keep the tray and apps merged after change events
+                    tmp = GetQuickTaskbarRects(taskbar.TaskbarHwnd,taskbar.TrayHwnd,taskbar.AppListHwnd,taskbar.ContentHwnd);
+                }));
+                lastTrayPosForDynamicCheck = newTrayPos;
+                return tmp;
+            }
+            update_needed_on_dynamic_tb = false;
+            lastTrayPosForDynamicCheck = newTrayPos;
+            return taskbar;
+        }
+
         /// <summary>
         /// Creates a dynamic region for a specific taskbar and applies it.
         /// </summary>
         /// <returns>
         /// a bool indicating success.
         /// </returns>
-
         public static bool UpdateDynamicTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
             try
             {
+                if (update_needed_on_dynamic_tb)
+                {
+                    taskbar = UpdateDynamicTrayCheckRoutine(taskbar,taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2));
+                }
+
                 //Set applist to the left
                 LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition

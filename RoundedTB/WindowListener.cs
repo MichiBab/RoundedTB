@@ -84,10 +84,12 @@ namespace RoundedTB
             System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 mw.ApplyButton_Click(null, null); //Apply Button click fixes the taskbar after a screen change event or Powerstate change event
-                SendRefreshToTaskbar(); //This refreshes the appbar to keep the tray and apps merged after change events
+                //SendRefreshToTaskbar(); //This refreshes the appbar to keep the tray and apps merged after change events
+                //Inform Taskbar that an update is needed
+                Taskbar.update_needed_on_dynamic_tb = true;
             }));
             
-
+            
             /*
             // If the monitor connected is big, it kinda seems to be delayed and the click apply button comes first and it the rearanges.
             // so this is just a simple fix first...
