@@ -196,8 +196,7 @@ namespace RoundedTB
 
         
 
-        public static volatile bool update_needed_on_dynamic_tb = true;
-        public static volatile int lastTrayPosForDynamicCheck = 0;
+        public static volatile bool update_needed_on_dynamic_tb = false;
 
         /// <summary>
         /// Refreshes the taskbar after a window state change event like a powerevent. Creates a new form to force a refresh,
@@ -206,22 +205,25 @@ namespace RoundedTB
         /// <returns>
         /// a updated taskbar or current if not updated
         /// </returns>
-        private static Types.Taskbar UpdateDynamicTrayCheckRoutine(Types.Taskbar taskbar,int newTrayPos)
+        private static Types.Taskbar UpdateDynamicTrayCheckRoutine(Types.Taskbar taskbar)
         {
-            if(lastTrayPosForDynamicCheck != newTrayPos)
+            Types.Taskbar tmp = null;
+            for (int i = 0; i < 10; i++)
             {
-                Types.Taskbar tmp = null;
+                //Attempt to refresh the taskbar until the applistrect updates, since it is in a wrong state after a screen change event.
                 System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
                     TBUpdateForm updateForm = new TBUpdateForm();
-                    updateForm.Show(); //This refreshes the appbar to keep the tray and apps merged after change events
-                    tmp = GetQuickTaskbarRects(taskbar.TaskbarHwnd,taskbar.TrayHwnd,taskbar.AppListHwnd,taskbar.ContentHwnd);
+                    updateForm.Show(); //This refreshes the appbar to keep the tray and apps merged after change 
                 }));
-                lastTrayPosForDynamicCheck = newTrayPos;
-                return tmp;
+                tmp = GetQuickTaskbarRects(taskbar.TaskbarHwnd, taskbar.TrayHwnd, taskbar.AppListHwnd, taskbar.ContentHwnd);
+                if (tmp.AppListRect.Right - ((tmp.TrayRect.Right - tmp.TrayRect.Left) / 2) != taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2))
+                {
+                    update_needed_on_dynamic_tb = false;
+                    return tmp;
+                }
+                System.Threading.Thread.Sleep(100);
             }
-            update_needed_on_dynamic_tb = false;
-            lastTrayPosForDynamicCheck = newTrayPos;
             return taskbar;
         }
 
@@ -237,10 +239,11 @@ namespace RoundedTB
             {
                 if (update_needed_on_dynamic_tb)
                 {
-                    taskbar = UpdateDynamicTrayCheckRoutine(taskbar,taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2));
+                    taskbar = UpdateDynamicTrayCheckRoutine(taskbar);
                 }
 
                 //Set applist to the left
+
                 LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
