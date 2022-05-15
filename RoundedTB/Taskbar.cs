@@ -10,8 +10,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
-
-
+using Interop.UIAutomationClient;
 
 namespace RoundedTB
 {
@@ -116,19 +115,22 @@ namespace RoundedTB
         /// <returns>
         /// a partial Taskbar containing just rects and handles.
         /// </returns>
-        public static Types.Taskbar GetQuickTaskbarRects(IntPtr taskbarHwnd, IntPtr trayHwnd, IntPtr appListHwnd, IntPtr contentHwnd)
+        public static Types.Taskbar GetQuickTaskbarRects(Types.Taskbar taskbar)
         {
-            LocalPInvoke.GetWindowRect(taskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
-            LocalPInvoke.GetWindowRect(trayHwnd, out LocalPInvoke.RECT trayRectCheck);
-            LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRectCheck);
-            LocalPInvoke.GetWindowRect(contentHwnd, out LocalPInvoke.RECT contentRectCheck);
-
+            LocalPInvoke.GetWindowRect(taskbar.TaskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
+            LocalPInvoke.GetWindowRect(taskbar.TrayHwnd, out LocalPInvoke.RECT trayRectCheck);
+            LocalPInvoke.GetWindowRect(taskbar.AppListHwnd, out LocalPInvoke.RECT appListRectCheck);
+            LocalPInvoke.GetWindowRect(taskbar.ContentHwnd, out LocalPInvoke.RECT contentRectCheck);
+            LocalPInvoke.GetWindowRect(taskbar.AppsHwnd, out LocalPInvoke.RECT appsRectCheck);
+           
             return new Types.Taskbar()
             {
-                TaskbarHwnd = taskbarHwnd,
-                TrayHwnd = trayHwnd,
-                AppListHwnd = appListHwnd,
-                ContentHwnd = contentHwnd,
+                TaskbarHwnd = taskbar.TaskbarHwnd,
+                TrayHwnd = taskbar.TrayHwnd,
+                AppListHwnd = taskbar.AppListHwnd,
+                ContentHwnd = taskbar.ContentHwnd,
+                AppsHwnd = taskbar.AppsHwnd,
+                AppsRect = appsRectCheck,
                 ContentRect = contentRectCheck,
                 TaskbarRect = taskbarRectCheck,
                 TrayRect = trayRectCheck,
@@ -194,36 +196,23 @@ namespace RoundedTB
             }
         }
 
-        
-
-        public static volatile bool update_needed_on_dynamic_tb = false;
-
-        /// <summary>
-        /// Refreshes the taskbar after a window state change event like a powerevent. Creates a new form to force a refresh,
-        /// else the AppList rect stays in a wrong position.
-        /// </summary>
-        /// <returns>
-        /// a updated taskbar or current if not updated
-        /// </returns>
-        private static Types.Taskbar UpdateDynamicTrayCheckRoutine(Types.Taskbar taskbar)
+        //correctly calculates the rect of the most right app icon in the taskbar to reposition the tray.
+        private static int GetTaskbarRightSize(Types.Taskbar taskbar)
         {
-            Types.Taskbar tmp = null;
-            for (int i = 0; i < 50; i++)
+            int ret_size = 0;
+            IUIAutomation pUIAutomation = new CUIAutomation();
+            // Taskbar
+            IUIAutomationElement windowElement = pUIAutomation.ElementFromHandle(taskbar.AppsHwnd);
+            if (windowElement != null)
             {
-                //Attempt to refresh the taskbar until the applistrect updates, since it is in a wrong state after a screen change event.
-                System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+                IUIAutomationCondition condition = pUIAutomation.CreateTrueCondition();
+                IUIAutomationElementArray elementArray = windowElement.FindAll(TreeScope.TreeScope_Descendants | TreeScope.TreeScope_Children, condition);
+                if (elementArray != null)
                 {
-                    TBUpdateForm updateForm = new TBUpdateForm();
-                    updateForm.Show(); //This refreshes the appbar to keep the tray and apps merged after change 
-                }));
-                tmp = GetQuickTaskbarRects(taskbar.TaskbarHwnd, taskbar.TrayHwnd, taskbar.AppListHwnd, taskbar.ContentHwnd);
-                if (tmp.AppListRect.Right - ((tmp.TrayRect.Right - tmp.TrayRect.Left) / 2) != taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2))
-                {
-                    return tmp;
+                    return elementArray.GetElement(elementArray.Length - 1).CurrentBoundingRectangle.right;
                 }
-                System.Threading.Thread.Sleep(100);
             }
-            return taskbar;
+            return ret_size;
         }
 
         /// <summary>
@@ -236,21 +225,16 @@ namespace RoundedTB
         {
             try
             {
-                if (update_needed_on_dynamic_tb)
-                {
-                    taskbar = UpdateDynamicTrayCheckRoutine(taskbar);
-                    update_needed_on_dynamic_tb = false;
-                }
+                int applistRight = GetTaskbarRightSize(taskbar);
 
                 //Set applist to the left
-
                 LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
                     LocalPInvoke.SetWindowPosFlags.FrameChanged);
 
                 //Set tray to the left
-                LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, taskbar.AppListRect.Right - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
+                LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, applistRight - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
                     LocalPInvoke.SetWindowPosFlags.FrameChanged
@@ -299,7 +283,7 @@ namespace RoundedTB
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicWidgetsLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
-                centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
+                centredDistanceFromEdge = taskbar.TaskbarRect.Right - applistRight - Convert.ToInt32(2 * taskbar.ScaleFactor);
 
                 
 
@@ -336,23 +320,6 @@ namespace RoundedTB
                         );
                 }
 
-                /*
-                // If the user has it enabled and the tray handle isn't null, create a region for the system tray and merge it with the taskbar region
-                if (settings.ShowTray && taskbar.TrayHwnd != IntPtr.Zero)
-                {
-                    IntPtr trayRegion = LocalPInvoke.CreateRoundRectRgn(
-                        (taskbar.TrayRect.Left - taskbar.TaskbarRect.Left) - trayEffectiveRegion.Left,
-                        trayEffectiveRegion.Top,
-                        trayEffectiveRegion.Width,
-                        trayEffectiveRegion.Height,
-                        trayEffectiveRegion.CornerRadius,
-                        trayEffectiveRegion.CornerRadius
-                        );
-
-                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
-                    mainRegion = workingRegion;
-                }
-                */
                 if (settings.ShowWidgets)
                 {
                     IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
@@ -511,11 +478,16 @@ namespace RoundedTB
 
             IntPtr hwndContent = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Find apps bar
             LocalPInvoke.GetWindowRect(hwndContent, out LocalPInvoke.RECT rectContent);
+
+            IntPtr appsHwnd = LocalPInvoke.FindWindowExA(hwndAppList, IntPtr.Zero, "MSTaskListWClass", null);
+            LocalPInvoke.GetWindowRect(appsHwnd, out LocalPInvoke.RECT appsRect);
             retVal.Add(new Types.Taskbar
             {
+                AppsHwnd = appsHwnd,
                 TaskbarHwnd = hwndMain,
                 ContentHwnd = hwndContent,
                 TrayHwnd = hwndTray,
+                AppsRect = appsRect,
                 AppListHwnd = hwndAppList,
                 ContentRect = rectContent,
                 TaskbarRect = rectMain,

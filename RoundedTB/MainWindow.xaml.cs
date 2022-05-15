@@ -66,7 +66,6 @@ namespace RoundedTB
 
             InitializeComponent();
 
-
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             var buildNumber = registryKey.GetValue("CurrentBuild").ToString();
