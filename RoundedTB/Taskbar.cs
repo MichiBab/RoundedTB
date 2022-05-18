@@ -226,20 +226,6 @@ namespace RoundedTB
             try
             {
                 int applistRight = GetTaskbarRightSize(taskbar);
-
-                //Set applist to the left
-                LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
-                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
-                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
-                    LocalPInvoke.SetWindowPosFlags.FrameChanged);
-
-                //Set tray to the left
-                LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, applistRight - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
-                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
-                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
-                    LocalPInvoke.SetWindowPosFlags.FrameChanged
-                    );
-
                 IntPtr mainRegion;
                 IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
@@ -337,6 +323,16 @@ namespace RoundedTB
 
                 // Apply the final region to the taskbar
                 LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true);
+                //Merge Applist with tray
+                LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
+                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
+                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
+                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent);
+                LocalPInvoke.SetWindowPos(taskbar.TrayHwnd, IntPtr.Zero, applistRight - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2), 0, 0, 0,
+                    LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
+                    | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
+                    LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent
+                    );
                 if (settings.CompositionCompat)
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
