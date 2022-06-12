@@ -11,6 +11,9 @@ namespace RoundedTB
 {
     public class Background
     {
+
+        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
         bool redrawOverride = false;
@@ -229,6 +232,10 @@ namespace RoundedTB
                         LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 255, LocalPInvoke.LWA_ALPHA);
                         taskbars[current].Ignored = true;
                         taskbars[current].TaskbarHidden = false;
+                        //Set to be on top of all windows
+                        
+                        LocalPInvoke.SetWindowPos(taskbars[current].TaskbarHwnd, HWND_TOPMOST, 0,0, 0, 0,
+                            LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.IgnoreMove);
                         Debug.WriteLine("MouseOver TB");
                     }
                     else if (!isHoveringOverTaskbar && taskbarOpacity == 255)
