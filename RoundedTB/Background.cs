@@ -218,6 +218,8 @@ namespace RoundedTB
                     //Debug.WriteLine($"Taskbar opacity:  {taskbarOpacity}");
                     if (isHoveringOverTaskbar && taskbarOpacity == 1)
                     {
+                        LocalPInvoke.SetWindowPos(taskbars[current].TaskbarHwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                            LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.IgnoreMove);
                         int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
                         if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
                         {
@@ -234,8 +236,7 @@ namespace RoundedTB
                         taskbars[current].TaskbarHidden = false;
                         //Set to be on top of all windows
                         
-                        LocalPInvoke.SetWindowPos(taskbars[current].TaskbarHwnd, HWND_TOPMOST, 0,0, 0, 0,
-                            LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.IgnoreMove);
+                        
                         Debug.WriteLine("MouseOver TB");
                     }
                     else if (!isHoveringOverTaskbar && taskbarOpacity == 255)
