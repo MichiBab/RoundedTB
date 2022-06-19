@@ -259,14 +259,21 @@ namespace RoundedTB
                 {
                     if (key != null)
                     {
-                        int val = (int)key.GetValue("TaskbarAl");
-                        if (val == 1)
+                        var keyval = key.GetValue("TaskbarAl"); 
+                        if(keyval == null)
                         {
-                            isCentred = true;
+                            isCentred = true; //default
                         }
                         else
                         {
-                            isCentred = false;
+                            if ((int)keyval == 1)
+                            {
+                                isCentred = true;
+                            }
+                            else
+                            {
+                                isCentred = false;
+                            }
                         }
                         interaction.AddLog($"Taskbar centred? {isCentred}");
                     }
