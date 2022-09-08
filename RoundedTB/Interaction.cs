@@ -100,11 +100,14 @@ namespace RoundedTB
 
         public static bool SetWorkspace(LocalPInvoke.RECT rect)
         {
+            //calling with 0 first fixes the problem on newer windows versions
             bool result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, 0);
+            result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, LocalPInvoke.SPIF_change) || result;
+
             if (!result)
             {
                 // Get error
-                Debug.WriteLine("Error setting work area: " + Marshal.GetLastWin32Error().ToString());
+                Debug.WriteLine("Error setting work area result: " + Marshal.GetLastWin32Error().ToString());
             }
 
             return result;
