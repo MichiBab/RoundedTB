@@ -279,13 +279,19 @@ namespace RoundedTB
                     centredDistanceFromEdge -= Convert.ToInt32(20 * taskbar.ScaleFactor);
                 }
 
+                int merge_offset = 0;
+                if (settings.MergeTrayWithAppBar)
+                {
+                    merge_offset = ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2);
+                }
+
                 // Create region for if the taskbar is centred by take the right-to-right distance (centredDistanceFromEdge) off from both sides, as well as the margin
                 if (settings.IsCentred)
                 {
                     mainRegion = LocalPInvoke.CreateRoundRectRgn(
-                        centredDistanceFromEdge + centredEffectiveRegion.Left - ((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2),
+                        centredDistanceFromEdge + centredEffectiveRegion.Left - merge_offset,
                         centredEffectiveRegion.Top,
-                        centredEffectiveRegion.Width - centredDistanceFromEdge + (((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)),
+                        centredEffectiveRegion.Width - centredDistanceFromEdge + merge_offset,
                         centredEffectiveRegion.Height,
                         centredEffectiveRegion.CornerRadius,
                         centredEffectiveRegion.CornerRadius
@@ -304,6 +310,7 @@ namespace RoundedTB
                         taskbarEffectiveRegion.CornerRadius,
                         taskbarEffectiveRegion.CornerRadius
                         );
+                    
                 }
 
                 if (settings.ShowWidgets)
@@ -321,8 +328,25 @@ namespace RoundedTB
                     mainRegion = workingRegion;
                 }
 
+                // If the user has it enabled and the tray handle isn't null, create a region for the system tray and merge it with the taskbar region
+                if (settings.ShowTray && taskbar.TrayHwnd != IntPtr.Zero && !settings.MergeTrayWithAppBar )
+                {
+                    IntPtr trayRegion = LocalPInvoke.CreateRoundRectRgn(
+                        (taskbar.TrayRect.Left - taskbar.TaskbarRect.Left) - trayEffectiveRegion.Left,
+                        trayEffectiveRegion.Top,
+                        trayEffectiveRegion.Width,
+                        trayEffectiveRegion.Height,
+                        trayEffectiveRegion.CornerRadius,
+                        trayEffectiveRegion.CornerRadius
+                        );
+
+                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
+                    mainRegion = workingRegion;
+                }
+
                 // Apply the final region to the taskbar
                 LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true);
+                if (settings.MergeTrayWithAppBar) { 
                 //Merge Applist with tray
                 LocalPInvoke.SetWindowPos(taskbar.ContentHwnd, IntPtr.Zero, -(((taskbar.TrayRect.Right - taskbar.TrayRect.Left) / 2)), 0, 0, 0,
                     LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.AsynchronousWindowPosition
@@ -333,6 +357,8 @@ namespace RoundedTB
                     | LocalPInvoke.SetWindowPosFlags.DoNotActivate | LocalPInvoke.SetWindowPosFlags.IgnoreZOrder |
                     LocalPInvoke.SetWindowPosFlags.DoNotSendChangingEvent
                     );
+                }
+
                 if (settings.CompositionCompat)
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);

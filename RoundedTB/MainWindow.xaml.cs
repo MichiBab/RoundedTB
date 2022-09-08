@@ -171,6 +171,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
+                        MergeTrayWithAppBar = false,
                         ShowTray = false,
                         ShowWidgets = false,
                         CompositionCompat = false,
@@ -192,6 +193,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
+                        MergeTrayWithAppBar = false,
                         ShowTray = false,
                         ShowWidgets = false,
                         CompositionCompat = false,
@@ -296,6 +298,7 @@ namespace RoundedTB
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
+            mergeTrayWithAppBar.IsChecked = activeSettings.MergeTrayWithAppBar;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -481,6 +484,7 @@ namespace RoundedTB
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
             activeSettings.ShowSegmentsOnHover = (bool)showSegmentsOnHoverCheckBox.IsChecked;
+            activeSettings.MergeTrayWithAppBar = (bool)mergeTrayWithAppBar.IsChecked;
 
             try
             {
@@ -952,6 +956,24 @@ namespace RoundedTB
 
             showWidgetsCheckBox.IsEnabled = true;
             showWidgetsCheckBox.IsChecked = true;
+        }
+
+        private void mergeTrayCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            mergeTrayWithAppBar.IsEnabled = false;
+            mergeTrayWithAppBar.IsChecked = false;
+
+            mergeTrayWithAppBar.IsEnabled = false;
+            mergeTrayWithAppBar.IsChecked = false;
+        }
+
+        private void mergeTrayCheckBox_checked(object sender, RoutedEventArgs e)
+        {
+            mergeTrayWithAppBar.IsEnabled = true;
+            mergeTrayWithAppBar.IsChecked = true;
+
+            mergeTrayWithAppBar.IsEnabled = true;
+            mergeTrayWithAppBar.IsChecked = true;
         }
 
         private void taskbarRectStandIn_Click(object sender, RoutedEventArgs e)

@@ -43,6 +43,8 @@ namespace RoundedTB
             public SegmentSettings DynamicTrayLayout { get; set; }
             public SegmentSettings DynamicWidgetsLayout { get; set; }
             public bool IsDynamic { get; set; }
+
+            public bool MergeTrayWithAppBar { get; set; }
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
