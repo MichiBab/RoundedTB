@@ -100,7 +100,7 @@ namespace RoundedTB
 
         public static bool SetWorkspace(LocalPInvoke.RECT rect)
         {
-            bool result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, LocalPInvoke.SPIF_change);
+            bool result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, 0);
             if (!result)
             {
                 // Get error
