@@ -11,6 +11,9 @@ namespace RoundedTB
 {
     public class Background
     {
+
+        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
         bool redrawOverride = false;
@@ -129,6 +132,7 @@ namespace RoundedTB
                 Debug.WriteLine("Regenerating taskbar info");
             }
 
+
             for (int current = 0; current < taskbars.Count; current++)
             {
                 if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
@@ -138,7 +142,7 @@ namespace RoundedTB
                     break;
                 }
                 // Get the latest quick details of this taskbar
-                Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
+                Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current]);
 
 
                 // If the taskbar's monitor has a maximised window, reset it so it's "filled"
@@ -214,6 +218,8 @@ namespace RoundedTB
                     //Debug.WriteLine($"Taskbar opacity:  {taskbarOpacity}");
                     if (isHoveringOverTaskbar && taskbarOpacity == 1)
                     {
+                        LocalPInvoke.SetWindowPos(taskbars[current].TaskbarHwnd, HWND_TOPMOST, 0, 0, 0, 0,
+                            LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.IgnoreMove);
                         int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
                         if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
                         {
@@ -228,6 +234,9 @@ namespace RoundedTB
                         LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 255, LocalPInvoke.LWA_ALPHA);
                         taskbars[current].Ignored = true;
                         taskbars[current].TaskbarHidden = false;
+                        //Set to be on top of all windows
+                        
+                        
                         Debug.WriteLine("MouseOver TB");
                     }
                     else if (!isHoveringOverTaskbar && taskbarOpacity == 255)
@@ -273,14 +282,13 @@ namespace RoundedTB
                     }
                 }
 
-
                 // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
                 if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)
                 {
                     Debug.WriteLine($"Refresh required on taskbar {current}");
                     taskbars[current].Ignored = false;
                     int isFullTest = newTaskbar.TrayRect.Left - newTaskbar.AppListRect.Right;
-                    mw.interaction.AddLog($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
+                    //mw.interaction.AddLog($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
                     if (!settings.IsDynamic || (isFullTest <= taskbars[current].ScaleFactor * 25 && isFullTest > 0 && newTaskbar.TrayRect.Left != 0))
                     {
                         // Add the rect changes to the temporary list of taskbars
@@ -288,25 +296,22 @@ namespace RoundedTB
                         taskbars[current].AppListRect = newTaskbar.AppListRect;
                         taskbars[current].TrayRect = newTaskbar.TrayRect;
                         Taskbar.UpdateSimpleTaskbar(taskbars[current], settings);
-                        mw.interaction.AddLog($"Updated taskbar {current} simply");
+                        //mw.interaction.AddLog($"Updated taskbar {current} simply");
                     }
                     else
                     {
                         if (Taskbar.CheckDynamicUpdateIsValid(taskbars[current], newTaskbar))
                         {
-                            // Add the rect changes to the temporary list of taskbars
+                            //Update directly, old routine did not catch it after merging tray and taskbar
                             taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;
                             taskbars[current].AppListRect = newTaskbar.AppListRect;
                             taskbars[current].TrayRect = newTaskbar.TrayRect;
                             Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
-                            mw.interaction.AddLog($"Updated taskbar {current} dynamically");
                         }
                     }
                 }
             }
             mw.taskbarDetails = taskbars;
-
-
         }
     }
 }

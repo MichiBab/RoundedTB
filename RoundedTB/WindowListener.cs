@@ -16,7 +16,6 @@ namespace RoundedTB
 
 
         public MainWindow mw;
-        string m = "";
 
         public Thread formthread;
         public WindowListener()
@@ -65,33 +64,22 @@ namespace RoundedTB
             Close();
         }
 
+        public void ForceRefreshOfTaskbarRoutine()
+        {
+            //reset taskbar on display change
+            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                mw.ApplyButton_Click(null, null); //Apply Button click fixes the taskbar after a screen change event or Powerstate change event
+            }));
+        }
+        
         protected override void WndProc(ref Message m)
         {
             const int WM_DISPLAYCHANGE = 0x007e;
             switch (m.Msg)
             {
                 case WM_DISPLAYCHANGE:
-                    //reset taskbar on display change
-                    System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                    {
-                        mw.ApplyButton_Click(null, null);
-                    }));
-
-                    // If the monitor connected is big, it kinda seems to be delayed and the click apply button comes first and it the rearanges.
-                    // so this is just a simple fix first...
-                    new Thread(() => { 
-                        
-                            Thread.Sleep(1000);
-                            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                mw.ApplyButton_Click(null, null);
-                            }));
-                            Thread.Sleep(2000);
-                            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                            {
-                                mw.ApplyButton_Click(null, null);
-                            }));
-                            }).Start();
+                    ForceRefreshOfTaskbarRoutine();
                     break;
             }
             base.WndProc(ref m);

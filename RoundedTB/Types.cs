@@ -13,7 +13,16 @@ namespace RoundedTB
             public IntPtr TaskbarHwnd { get; set; } // Handle to the taskbar
             public IntPtr TrayHwnd { get; set; } // Handle to the tray on the taskbar (if present)
             public IntPtr AppListHwnd { get; set; } // Handle to the list of open/pinned apps on the taskbar
+
+            public IntPtr ReBarHwnd { get; set; } // rebar
+            public IntPtr ContentHwnd { get; set; } // Find apps bar
+
+            public IntPtr AppsHwnd { get; set; } // Find apps
+
+            public LocalPInvoke.RECT AppsRect { get; set; }
+            public LocalPInvoke.RECT ContentRect { get; set; } // Apps Bar Rect
             public LocalPInvoke.RECT TaskbarRect { get; set; } // Bounding box for the taskbar
+            public LocalPInvoke.RECT ReBarRect { get; set; } // Bounding box for the taskbar
             public LocalPInvoke.RECT TrayRect { get; set; }  // Bounding box for the tray (dynamic)
             public LocalPInvoke.RECT AppListRect { get; set; } // Bounding box for the list of pinned & open apps (dynamic)
             public IntPtr RecoveryHrgn { get; set; } // Pointer to the recovery region for any given taskbar. Defaults to IntPtr.Zero
@@ -34,6 +43,8 @@ namespace RoundedTB
             public SegmentSettings DynamicTrayLayout { get; set; }
             public SegmentSettings DynamicWidgetsLayout { get; set; }
             public bool IsDynamic { get; set; }
+
+            public bool MergeTrayWithAppBar { get; set; }
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }

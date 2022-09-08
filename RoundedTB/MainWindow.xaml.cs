@@ -66,7 +66,6 @@ namespace RoundedTB
 
             InitializeComponent();
 
-
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             var buildNumber = registryKey.GetValue("CurrentBuild").ToString();
@@ -172,6 +171,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
+                        MergeTrayWithAppBar = false,
                         ShowTray = false,
                         ShowWidgets = false,
                         CompositionCompat = false,
@@ -193,6 +193,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
+                        MergeTrayWithAppBar = false,
                         ShowTray = false,
                         ShowWidgets = false,
                         CompositionCompat = false,
@@ -260,14 +261,21 @@ namespace RoundedTB
                 {
                     if (key != null)
                     {
-                        int val = (int)key.GetValue("TaskbarAl");
-                        if (val == 1)
+                        var keyval = key.GetValue("TaskbarAl"); 
+                        if(keyval == null)
                         {
-                            isCentred = true;
+                            isCentred = true; //default
                         }
                         else
                         {
-                            isCentred = false;
+                            if ((int)keyval == 1)
+                            {
+                                isCentred = true;
+                            }
+                            else
+                            {
+                                isCentred = false;
+                            }
                         }
                         interaction.AddLog($"Taskbar centred? {isCentred}");
                     }
@@ -290,6 +298,7 @@ namespace RoundedTB
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
+            mergeTrayWithAppBar.IsChecked = activeSettings.MergeTrayWithAppBar;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -475,6 +484,7 @@ namespace RoundedTB
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
             activeSettings.ShowSegmentsOnHover = (bool)showSegmentsOnHoverCheckBox.IsChecked;
+            activeSettings.MergeTrayWithAppBar = (bool)mergeTrayWithAppBar.IsChecked;
 
             try
             {
@@ -531,21 +541,15 @@ namespace RoundedTB
         private void OnPowerChange(object s, PowerModeChangedEventArgs e)
                 {
             //reset taskbar on display change
-            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-                    {
-                        ApplyButton_Click(null, null);
-                    }));
             Debug.WriteLine("Caught powerchanged event");
-                }
+            windowListener.ForceRefreshOfTaskbarRoutine();
+        }
 
         private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
             //reset taskbar on display change
-            System.Windows.Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                ApplyButton_Click(null, null);
-            }));
             Debug.WriteLine("Caught session switch event");
+            windowListener.ForceRefreshOfTaskbarRoutine();
         }
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -952,6 +956,24 @@ namespace RoundedTB
 
             showWidgetsCheckBox.IsEnabled = true;
             showWidgetsCheckBox.IsChecked = true;
+        }
+
+        private void mergeTrayCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            mergeTrayWithAppBar.IsEnabled = false;
+            mergeTrayWithAppBar.IsChecked = false;
+
+            mergeTrayWithAppBar.IsEnabled = false;
+            mergeTrayWithAppBar.IsChecked = false;
+        }
+
+        private void mergeTrayCheckBox_checked(object sender, RoutedEventArgs e)
+        {
+            mergeTrayWithAppBar.IsEnabled = true;
+            mergeTrayWithAppBar.IsChecked = true;
+
+            mergeTrayWithAppBar.IsEnabled = true;
+            mergeTrayWithAppBar.IsChecked = true;
         }
 
         private void taskbarRectStandIn_Click(object sender, RoutedEventArgs e)
