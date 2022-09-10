@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using Interop.UIAutomationClient;
+using PInvoke;
 
 namespace RoundedTB
 {
@@ -65,6 +68,21 @@ namespace RoundedTB
                 }
             }
         }
+
+        public bool StartMenuIsOpen()
+        {
+
+            Type tIAppVisibility = Type.GetTypeFromCLSID(new Guid("7E5FE3D9-985F-4908-91F9-EE19F9FD1514"));
+            IAppVisibility appVisibility = (IAppVisibility)Activator.CreateInstance(tIAppVisibility);
+            if (appVisibility.IsLauncherVisible())
+            {
+                return true;
+            }
+            return false;
+        }
+
+        
+
 
 
         public void WorkRoutine()
@@ -216,7 +234,9 @@ namespace RoundedTB
                     byte taskbarOpacity = 0;
                     LocalPInvoke.GetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, out _, out taskbarOpacity, out _);
                     //Debug.WriteLine($"Taskbar opacity:  {taskbarOpacity}");
-                    if (isHoveringOverTaskbar && taskbarOpacity == 1)
+                    bool startMenuOpened = StartMenuIsOpen();
+
+                    if ((isHoveringOverTaskbar || startMenuOpened) && taskbarOpacity == 1)
                     {
                         LocalPInvoke.SetWindowPos(taskbars[current].TaskbarHwnd, HWND_TOPMOST, 0, 0, 0, 0,
                             LocalPInvoke.SetWindowPosFlags.IgnoreResize | LocalPInvoke.SetWindowPosFlags.IgnoreMove);
@@ -239,7 +259,7 @@ namespace RoundedTB
                         
                         Debug.WriteLine("MouseOver TB");
                     }
-                    else if (!isHoveringOverTaskbar && taskbarOpacity == 255)
+                    else if (!isHoveringOverTaskbar && !startMenuOpened && taskbarOpacity == 255)
                     {
                         LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 191, LocalPInvoke.LWA_ALPHA);
                         System.Threading.Thread.Sleep(animSpeed);
