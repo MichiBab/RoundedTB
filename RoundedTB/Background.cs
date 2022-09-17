@@ -39,6 +39,41 @@ namespace RoundedTB
         {
             Interlocked.Exchange(ref POLLING_RATE_IN_MS, val);
         }
+
+        
+
+        private static bool CheckIfCurrentAppIsFullscreen()
+        {
+            IntPtr desktopHandle; //Window handle for the desktop
+            IntPtr shellHandle;
+            desktopHandle = LocalPInvoke.GetDesktopWindow();
+            shellHandle = LocalPInvoke.GetShellWindow();
+            //Detect if the current app is running in full screen
+            bool runningFullScreen = false;
+            LocalPInvoke.RECT appBounds;
+            System.Drawing.Rectangle screenBounds;
+            IntPtr hWnd;
+
+
+            //get the dimensions of the active window
+            hWnd = LocalPInvoke.GetForegroundWindow();
+            if (!hWnd.Equals(IntPtr.Zero))
+            {
+                //Check we haven't picked up the desktop or the shell
+                if (!(hWnd.Equals(desktopHandle) || hWnd.Equals(shellHandle)))
+                {
+                    LocalPInvoke.GetWindowRect(hWnd, out appBounds);
+                    //determine if window is fullscreen
+                    screenBounds = Screen.FromHandle(hWnd).Bounds;
+                    if ((appBounds.Bottom - appBounds.Top) == screenBounds.Height && (appBounds.Right - appBounds.Left) == screenBounds.Width)
+                    {
+                        runningFullScreen = true;
+                    }
+                }
+            }
+
+            return runningFullScreen;
+        }
         
 
         public static void AttachedThreadInputAction(Action action)
@@ -379,7 +414,11 @@ namespace RoundedTB
                         foreach (Types.Taskbar taskbar in taskbars)
                         {
                             Debug.WriteLine("updating tb");
-                            ForceWindowToForeground(taskbar.TaskbarHwnd,settings.ForceTBFocusOnTop);  
+                            //check if current app is fullscreened, if yes, skip to not disrupt it.
+                            if (!CheckIfCurrentAppIsFullscreen())
+                            {
+                                ForceWindowToForeground(taskbar.TaskbarHwnd, settings.ForceTBFocusOnTop);
+                            }
 
                         }
 
