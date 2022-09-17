@@ -194,6 +194,7 @@ namespace RoundedTB
                         IsCentred = false,
                         IsWindows11 = false,
                         MergeTrayWithAppBar = false,
+                        ForceTBFocusOnTop = false,
                         ShowTray = false,
                         ShowWidgets = false,
                         CompositionCompat = false,
@@ -299,6 +300,8 @@ namespace RoundedTB
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
             mergeTrayWithAppBar.IsChecked = activeSettings.MergeTrayWithAppBar;
+            forceTBFocusOnTop.IsChecked = activeSettings.ForceTBFocusOnTop;
+
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -485,6 +488,7 @@ namespace RoundedTB
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
             activeSettings.ShowSegmentsOnHover = (bool)showSegmentsOnHoverCheckBox.IsChecked;
             activeSettings.MergeTrayWithAppBar = (bool)mergeTrayWithAppBar.IsChecked;
+            activeSettings.ForceTBFocusOnTop = (bool)forceTBFocusOnTop.IsChecked;
 
             try
             {
@@ -1192,6 +1196,11 @@ namespace RoundedTB
         private void cornerRadiusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
+        }
+
+        private void forceTBFocusOnTop_Checked(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

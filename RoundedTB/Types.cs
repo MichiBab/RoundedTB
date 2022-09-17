@@ -45,7 +45,9 @@ namespace RoundedTB
             public bool IsDynamic { get; set; }
 
             public bool MergeTrayWithAppBar { get; set; }
+            public bool ForceTBFocusOnTop { get; set; }
             public bool IsCentred { get; set; }
+            
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
             public bool ShowWidgets { get; set; }

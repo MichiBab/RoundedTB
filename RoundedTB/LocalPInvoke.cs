@@ -7,11 +7,45 @@ namespace RoundedTB
 {
     public class LocalPInvoke
     {
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd,
+            out uint lpdwProcessId);
+
+        // When you don't want the ProcessId, use this overload and pass 
+        // IntPtr.Zero for the second parameter
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd,
+            IntPtr ProcessId);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
+        /// The GetForegroundWindow function returns a handle to the 
+        /// foreground window.
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        public static extern bool AttachThreadInput(uint idAttach,
+            uint idAttachTo, bool fAttach);
+
+
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, uint nCmdShow);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
 
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool BringWindowToTop(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool BringWindowToTop(HandleRef hWnd);
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterHotKey(IntPtr hWnd, int id);

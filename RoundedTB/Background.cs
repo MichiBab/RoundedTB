@@ -28,10 +28,67 @@ namespace RoundedTB
         {
             mw = (MainWindow)System.Windows.Application.Current.MainWindow;
         }
+        
+
+        public static void AttachedThreadInputAction(Action action)
+        {
+            var foreThread = LocalPInvoke.GetWindowThreadProcessId(LocalPInvoke.GetForegroundWindow(),
+                IntPtr.Zero);
+            var appThread = LocalPInvoke.GetCurrentThreadId();
+            bool threadsAttached = false;
+
+            try
+            {
+                threadsAttached =
+                    foreThread == appThread ||
+                    LocalPInvoke.AttachThreadInput(foreThread, appThread, true);
+
+                if (threadsAttached) action();
+                else return;
+            }
+            finally
+            {
+                if (threadsAttached)
+                    LocalPInvoke.AttachThreadInput(foreThread, appThread, false);
+            }
+        }
+        public static void ForceWindowToForeground(IntPtr hwnd, bool forceOnTop)
+        {
+            AttachedThreadInputAction(
+                () =>
+                {
+                    if (forceOnTop)
+                    {
+                        LocalPInvoke.BringWindowToTop(hwnd);
+                    }
+                    LocalPInvoke.ShowWindow(hwnd, 5);
+                });
+        }
+
+        private static void ForceForegroundWindow(IntPtr hWnd)
+        {
+            uint foreThread = LocalPInvoke.GetWindowThreadProcessId(LocalPInvoke.GetForegroundWindow(),
+                IntPtr.Zero);
+            uint appThread = LocalPInvoke.GetCurrentThreadId();
+
+            if (foreThread != appThread)
+            {
+                LocalPInvoke.AttachThreadInput(foreThread, appThread, true);
+                LocalPInvoke.BringWindowToTop(hWnd);
+                LocalPInvoke.ShowWindow(hWnd, 5);
+                LocalPInvoke.AttachThreadInput(foreThread, appThread, false);
+            }
+            else
+            {
+                LocalPInvoke.BringWindowToTop(hWnd);
+                LocalPInvoke.ShowWindow(hWnd, 5);
+            }
+        }
 
 
-        // Main method for the BackgroundWorker - runs indefinitely
-        public void DoWork(object sender, DoWorkEventArgs e)
+
+            // Main method for the BackgroundWorker - runs indefinitely
+            public void DoWork(object sender, DoWorkEventArgs e)
         {
             mw.interaction.AddLog("in bw");
             Debug.WriteLine("BW: IN DO WORK");
@@ -271,7 +328,7 @@ namespace RoundedTB
                     }
                     if (isHoveringOverTaskbar)
                     {
-                        Debug.WriteLine("___");
+                        //Debug.WriteLine("___");
                     }
                     int animSpeed = 15;
                     byte taskbarOpacity = 0;
@@ -298,8 +355,13 @@ namespace RoundedTB
                         taskbars[current].Ignored = true;
                         taskbars[current].TaskbarHidden = false;
                         //Set to be on top of all windows
-                        
-                        
+                        foreach (Types.Taskbar taskbar in taskbars)
+                        {
+                            Debug.WriteLine("updating tb");
+                            ForceWindowToForeground(taskbar.TaskbarHwnd,settings.ForceTBFocusOnTop);  
+
+                        }
+
                         Debug.WriteLine("MouseOver TB");
                     }
                     else if (!isHoveringOverTaskbar && !startMenuOpened && taskbarOpacity == 255)

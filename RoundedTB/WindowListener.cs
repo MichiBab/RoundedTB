@@ -42,6 +42,9 @@ namespace RoundedTB
             base.SetVisibleCore(value);
         }
 
+                
+        
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             if (!allowClose)
@@ -51,6 +54,7 @@ namespace RoundedTB
             }
             base.OnFormClosing(e);
         }
+
 
         private void showToolStripMenuItem_Click(object sender, EventArgs e)
         {
