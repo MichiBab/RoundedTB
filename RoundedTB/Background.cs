@@ -63,9 +63,19 @@ namespace RoundedTB
                     LocalPInvoke.AttachThreadInput(foreThread, appThread, false);
             }
         }
+
+        private static IntPtr last_window = IntPtr.Zero;
         public static void ForceWindowToForeground(IntPtr hwnd, bool forceOnTop)
         {
-            AttachedThreadInputAction(
+            if (forceOnTop)
+            {
+                IntPtr tmp = LocalPInvoke.GetForegroundWindow(); 
+                if (tmp != IntPtr.Zero)
+                {
+                    last_window = tmp;
+                }
+            }
+                AttachedThreadInputAction(
                 () =>
                 {
                     if (forceOnTop)
@@ -392,6 +402,14 @@ namespace RoundedTB
                         taskbars[current].Ignored = true;
                         taskbars[current].TaskbarHidden = true;
                         Debug.WriteLine("MouseOff TB");
+                        if (settings.ForceTBFocusOnTop)
+                        {
+                            IntPtr tmp = LocalPInvoke.GetForegroundWindow();
+                            if (tmp == taskbars[current].TaskbarHwnd)
+                            {
+                                ForceWindowToForeground(last_window, settings.ForceTBFocusOnTop);
+                            }
+                        }
                     }
                 }
                 else
