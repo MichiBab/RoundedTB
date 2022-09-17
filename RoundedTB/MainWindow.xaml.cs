@@ -505,6 +505,7 @@ namespace RoundedTB
             activeSettings.ShowSegmentsOnHover = (bool)showSegmentsOnHoverCheckBox.IsChecked;
             activeSettings.MergeTrayWithAppBar = (bool)mergeTrayWithAppBar.IsChecked;
             activeSettings.ForceTBFocusOnTop = (bool)forceTBFocusOnTop.IsChecked;
+            activeSettings.PollingRateInMS = polling_update.ToString();
 
             try
             {
