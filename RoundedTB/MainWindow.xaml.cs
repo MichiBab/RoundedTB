@@ -168,6 +168,7 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        PollingRateInMS = "100",
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
@@ -190,6 +191,7 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        PollingRateInMS = "100",
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
@@ -240,7 +242,7 @@ namespace RoundedTB
                 mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
                 mRightInput.Text = activeSettings.DynamicAppListLayout.MarginRight.ToString();
-
+                PollingRateInMS.Text = activeSettings.PollingRateInMS;
                 selectedSegment = 1;
             }
             else
@@ -251,7 +253,7 @@ namespace RoundedTB
                 mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
                 mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
-
+                PollingRateInMS.Text = activeSettings.PollingRateInMS;
                 selectedSegment = 0;
             }
 
@@ -342,9 +344,12 @@ namespace RoundedTB
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
 
+
+
             AutoHide(true, taskbarDetails);
 
             UpdateUi();
+
 
         }
 
@@ -465,18 +470,29 @@ namespace RoundedTB
             int ml = 0;
             int mb = 0;
             int mr = 0;
-
-
-
-            {
-                if ((!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != string.Empty)
-                || (!int.TryParse(mLeftInput.Text, out ml) && mLeftInput.Text != string.Empty)
-                || (!int.TryParse(mBottomInput.Text, out mb) && mBottomInput.Text != string.Empty)
-                || (!int.TryParse(mRightInput.Text, out mr) && mRightInput.Text != string.Empty))
-                {
-                    return;
-                }
+            int polling_update = 100;
+            if (!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != string.Empty)
+            { mTopInput.Text = "0";
+                mt = 0;
             }
+            if (!int.TryParse(mLeftInput.Text, out ml) && mLeftInput.Text != string.Empty)
+            { mLeftInput.Text = "0";
+                ml = 0;
+            }
+            if (!int.TryParse(mBottomInput.Text, out mb) && mBottomInput.Text != string.Empty)
+            { mBottomInput.Text = "0";
+                mb = 0;
+            }
+            if (!int.TryParse(mRightInput.Text, out mr) && mRightInput.Text != string.Empty)
+            { mRightInput.Text = "0";
+                mr = 0;
+            }
+            if (!int.TryParse(PollingRateInMS.Text, out polling_update) && mRightInput.Text != string.Empty)
+            { PollingRateInMS.Text = "100";
+                polling_update = 100;
+            }
+            if (polling_update < 0 ) polling_update = 0;
+            RoundedTB.Background.SetPollingRate(polling_update);
 
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
@@ -1199,6 +1215,16 @@ namespace RoundedTB
         }
 
         private void forceTBFocusOnTop_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void mainTitleBar_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void mainTitleBar_Loaded_1(object sender, RoutedEventArgs e)
         {
 
         }

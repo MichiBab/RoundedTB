@@ -48,6 +48,7 @@ namespace RoundedTB
             public bool ForceTBFocusOnTop { get; set; }
             public bool IsCentred { get; set; }
             
+            public String PollingRateInMS { get;set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
             public bool ShowWidgets { get; set; }

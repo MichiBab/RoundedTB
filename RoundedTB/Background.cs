@@ -9,12 +9,14 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using Interop.UIAutomationClient;
+using Newtonsoft.Json.Linq;
 using PInvoke;
 
 namespace RoundedTB
 {
     public class Background
     {
+        private static int POLLING_RATE_IN_MS = 100;
 
         static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
@@ -27,6 +29,15 @@ namespace RoundedTB
         public Background()
         {
             mw = (MainWindow)System.Windows.Application.Current.MainWindow;
+        }
+
+        public static int GetPollingRate()
+        {
+            return Interlocked.CompareExchange(ref POLLING_RATE_IN_MS, 0, 0);
+        }
+        public static void SetPollingRate(int val)
+        {
+            Interlocked.Exchange(ref POLLING_RATE_IN_MS, val);
         }
         
 
@@ -115,7 +126,7 @@ namespace RoundedTB
                         }
                         
 
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(GetPollingRate());
                     }
                 }
                 catch (TypeInitializationException ex)
