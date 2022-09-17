@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Threading;
 using Interop.UIAutomationClient;
 using PInvoke;
@@ -25,7 +26,7 @@ namespace RoundedTB
 
         public Background()
         {
-            mw = (MainWindow)Application.Current.MainWindow;
+            mw = (MainWindow)System.Windows.Application.Current.MainWindow;
         }
 
 
@@ -81,7 +82,47 @@ namespace RoundedTB
             return false;
         }
 
-        
+        public void RefreshWorkAreaIfNeeded(List<Types.Taskbar> taskbars, Types.Settings settings)
+        {
+            int workingHeight = Screen.PrimaryScreen.WorkingArea.Height;
+            int boundsHeight = Screen.PrimaryScreen.Bounds.Height;
+            int taskbarHeight = taskbars[0].TaskbarRect.Bottom - taskbars[0].TaskbarRect.Top;
+
+
+            if (settings.AutoHide > 0)
+            {
+      
+                MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
+                bool found_problem = false;
+                foreach (MonitorStuff.DisplayInfo display in Displays)
+                {
+
+                    LocalPInvoke.RECT workArea = display.MonitorArea;
+                    LocalPInvoke.RECT toCheck = new();
+                    LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_GETWORKAREA, 0, ref toCheck, 0);
+                    var current = toCheck.Bottom - toCheck.Top;
+                    var wanted = workArea.Bottom - 1 - workArea.Top;
+                    if (current != wanted)
+                    {
+                        Debug.WriteLine("Found display with wrong work area, trying to refresh it.");
+                        found_problem = true;
+                        workArea.Bottom -= 1;
+                        Interaction.SetWorkspace(workArea);
+                    }
+                    
+                }
+                if (found_problem)
+                {
+                    foreach (Types.Taskbar taskbar in taskbars)
+                    {
+                        LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                        Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                    }
+                }
+                
+                
+            }
+        }
 
 
 
@@ -134,6 +175,7 @@ namespace RoundedTB
                 infrequentCount = 0;
             }
 
+            //check if the window region is applied correctly while using hide tb
             // Check if the taskbar is centred, and if it is, directly update the settings; using an interim bool to avoid delaying because I'm lazy
             bool isCentred = Taskbar.CheckIfCentred();
             mw.activeSettings.IsCentred = isCentred;
@@ -141,6 +183,7 @@ namespace RoundedTB
             // Work with static values to avoid some null reference exceptions
             List<Types.Taskbar> taskbars = mw.taskbarDetails;
             Types.Settings settings = mw.activeSettings;
+            RefreshWorkAreaIfNeeded(taskbars, settings);
 
             // If the number of taskbars has changed, regenerate taskbar information
             if (Taskbar.TaskbarCountOrHandleChanged(taskbars.Count, taskbars[0].TaskbarHwnd))

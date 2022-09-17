@@ -405,7 +405,7 @@ namespace RoundedTB
                 foreach (MonitorStuff.DisplayInfo display in Displays)
                 {
                     LocalPInvoke.RECT workArea = display.MonitorArea;
-                    workArea.Bottom = workArea.Bottom - 2;
+                    workArea.Bottom = workArea.Bottom - 1;
                     Interaction.SetWorkspace(workArea);
                 }
                 foreach (Types.Taskbar taskbar in taskbarDetails)
