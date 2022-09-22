@@ -146,7 +146,7 @@ namespace RoundedTB
             // Main method for the BackgroundWorker - runs indefinitely
             public void DoWork(object sender, DoWorkEventArgs e)
         {
-            mw.interaction.AddLog("in bw");
+            MainWindow.interaction.AddLog("in bw");
             Debug.WriteLine("BW: IN DO WORK");
             workerThread = new Thread(() => WorkRoutine());
             BackgroundWorker worker = sender as BackgroundWorker;
@@ -156,7 +156,7 @@ namespace RoundedTB
                 {
                     if (worker.CancellationPending == true)
                     {
-                        mw.interaction.AddLog("cancelling");
+                        MainWindow.interaction.AddLog("cancelling");
                         e.Cancel = true;
                         break;
                     }
@@ -176,8 +176,8 @@ namespace RoundedTB
                 }
                 catch (TypeInitializationException ex)
                 {
-                    mw.interaction.AddLog(ex.Message);
-                    mw.interaction.AddLog(ex.InnerException.Message);
+                    MainWindow.interaction.AddLog(ex.Message);
+                    MainWindow.interaction.AddLog(ex.InnerException.Message);
                     throw ex;
                 }
             }

@@ -545,7 +545,7 @@ namespace RoundedTB
                 {
                     LocalPInvoke.GetWindowRect(hwndCurrent, out LocalPInvoke.RECT rectCurrent);
                     LocalPInvoke.GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
-                    Interaction interaction = new Interaction();
+                    Interaction interaction = MainWindow.interaction;
                     IntPtr hwndSecTray = IntPtr.Zero;
                     if (interaction.IsWindows11())
                     {

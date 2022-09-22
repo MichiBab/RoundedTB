@@ -46,7 +46,7 @@ namespace RoundedTB
         public bool isCentred = false;
         public bool isAlreadyRunning = false;
         public Background background;
-        public Interaction interaction;
+        public static Interaction interaction;
         public static WindowListener windowListener = null;
         private HwndSource source;
         public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
@@ -82,9 +82,9 @@ namespace RoundedTB
             }
 
             // Initialise functions
-            background = new Background();
             interaction = new Interaction();
             windowListener = new WindowListener();
+            background = new Background();
             //for screen wake up after sleep
             SystemEvents.PowerModeChanged += OnPowerChange;
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
